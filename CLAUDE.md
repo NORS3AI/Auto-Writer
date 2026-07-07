@@ -58,6 +58,44 @@ Published stories live under **`/docs`** on `main` so that GitHub Pages updates 
 every merge. Keep `docs/index.html` (and any story pages) valid so the site keeps
 building.
 
+## Publishing a story to the site
+
+Every finished story becomes its own page in the library. To publish:
+
+1. **Slug.** Choose a short, URL-safe, lowercase-hyphenated slug from the title
+   (e.g. *"The Salt Kings"* → `the-salt-kings`). Ensure it is unique in
+   `docs/stories/`.
+2. **Create the page.** Copy `docs/stories/_TEMPLATE.html` to
+   `docs/stories/<slug>.html` and replace **every** `{{PLACEHOLDER}}` token —
+   `{{TITLE}}`, `{{DESCRIPTION}}`, `{{READING_LEVEL}}`, `{{WORD_COUNT}}`,
+   `{{DATE}}`, and `{{BODY}}`. Leave **no** `{{...}}` tokens behind.
+   - `{{BODY}}` is the full story as HTML: one `<p>…</p>` per paragraph. Do not
+     print chunk boundaries or "Chunk N" markers — the seams must be invisible.
+   - Escape any literal `&`, `<`, `>` in prose as `&amp;`, `&lt;`, `&gt;`.
+3. **Register it.** Append an entry to the `stories` array in
+   `docs/stories.json` so the library page lists it:
+
+   ```json
+   {
+     "slug": "the-salt-kings",
+     "title": "The Salt Kings",
+     "description": "One-sentence hook.",
+     "level": "10",
+     "words": "8,000",
+     "date": "2026-07-07"
+   }
+   ```
+
+   Keep the JSON valid (no trailing commas). The library sorts by `date`
+   descending, so newest stories appear first automatically.
+4. **Publish.** Commit, push, and merge to `main` per the workflow above. The
+   story appears at
+   `https://nors3ai.github.io/Auto-Writer/stories/<slug>.html` and in the
+   library at `https://nors3ai.github.io/Auto-Writer/stories/`.
+
+Never edit `docs/stories/_TEMPLATE.html` as if it were a story — it is the
+reusable source. Always copy it to a new slug file.
+
 ## GitHub Pages
 
 - Source: **`main` branch, `/docs` folder**.
