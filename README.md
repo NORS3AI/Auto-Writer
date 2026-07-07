@@ -2,8 +2,9 @@
 
 **Auto-Writer** turns a single prompt into a complete, richly-imagined story. From
 your idea it crafts the **world**, the **dialogue**, the **vibrant environment**, and
-the **story** itself — then writes, commits, pushes, and merges the finished work to
-`main` entirely on its own.
+the **story** itself — writing it in the app and saving it to **your library**, where
+you organize, edit, and manage your stories. Your writing stays in your browser; only
+the app's own code is version-controlled on GitHub.
 
 🌐 **Live site:** https://nors3ai.github.io/Auto-Writer/
 
@@ -49,34 +50,38 @@ sentence length, and complexity to match:
 | **12**         | Grade 12 — richer vocabulary, layered sentences      |
 | **Doctorate**  | Advanced — dense, sophisticated, scholarly prose     |
 
-## Autonomous publishing
+## Your library — where stories live
 
-Auto-Writer manages its own git workflow. Once a story is complete it will:
+Stories are created and written **in the app**, then saved to **your library**.
+The library lives in **your browser** (local storage) — it is **not** uploaded to
+the repository, and finished stories are never committed to the code. In the
+library you can:
 
-- **Commit** the finished work with a descriptive message,
-- **Push** the commit, and
-- **Merge** the result into `main` — automatically, with no manual step required.
+- **Create folders** and rename or delete them,
+- **Add stories**, and rename, **move between folders**, edit, or delete them,
+- **Edit the story text** in a built-in editor (title, reading level, and body),
+- **Backup / Restore** the whole library as a JSON file for safekeeping.
 
-Completed stories are published to GitHub Pages from the `main` branch `/docs`
-folder, so every merge updates the live site at
-https://nors3ai.github.io/Auto-Writer/.
+Only the **application's own code** (the pages under `/docs`) is version-controlled
+on GitHub. Your writing stays with you.
 
 ## Quick start
 
-1. Write your prompt (1–10,000 words) describing the story you want.
+1. Open the app and write your prompt (1–10,000 words) describing the story you want.
 2. Pick a reading level: **6**, **10**, **12**, or **doctorate**.
-3. Run Auto-Writer. It generates the story in 2,000-word chunks, then commits,
-   pushes, and merges to `main` on its own.
-4. Read the result on the live site.
+3. Auto-Writer generates the story in 2,000-word chunks, written into the app.
+4. Save it to **your library**, organize it into folders, and edit it any time.
 
 ## Repository layout
 
 ```
 Auto-Writer/
-├── README.md      # This file
-├── CLAUDE.md      # Operating instructions for the Auto-Writer agent
-└── docs/          # GitHub Pages site (source: main /docs)
-    └── index.html # Landing page — https://nors3ai.github.io/Auto-Writer/
+├── README.md            # This file
+├── CLAUDE.md            # Operating instructions for the Auto-Writer agent
+└── docs/                # GitHub Pages site (source: main /docs) — app code only
+    ├── index.html       # Landing page — https://nors3ai.github.io/Auto-Writer/
+    └── stories/
+        └── index.html   # Your library app (folders + story editor, browser-stored)
 ```
 
 ## GitHub Pages setup

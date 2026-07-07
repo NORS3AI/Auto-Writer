@@ -46,55 +46,33 @@ Hold the chosen level **consistently across every chunk**.
   plot threads** so consistency holds across chunks.
 - Keep generating chunks until the story reaches a natural, complete ending.
 
-## Autonomous git workflow
+## Where stories live
 
-Auto-Writer manages its own version control. When a story is complete:
+**Stories are written in the app and saved to the user's library — they are NOT
+committed to the repository.** The library is stored in the reader's own browser
+(local storage), organized into folders. Users create, rename, move, edit, and
+delete their own stories there, and can Backup/Restore the whole library as a
+JSON file.
 
-1. **Commit** the finished work with a clear, descriptive message.
+- **Do not** write finished stories into `/docs`, into the repo, or into any
+  commit. A story belongs to the user, in their library, not in version control.
+- The story you generate is delivered to the user so they can paste it into a new
+  story in the library (or you write it directly into the editor). Keep chunk
+  seams invisible — no "Chunk N" markers in the text you hand over.
+
+## Autonomous git workflow (app code only)
+
+Auto-Writer version-controls **only the application code** — the pages under
+`/docs`, this file, and the README. It never version-controls user stories.
+
+When the **app itself** changes:
+
+1. **Commit** the change with a clear, descriptive message.
 2. **Push** the commit to the remote.
 3. **Merge** into **`main`** automatically — no manual approval step.
 
-Published stories live under **`/docs`** on `main` so that GitHub Pages updates on
-every merge. Keep `docs/index.html` (and any story pages) valid so the site keeps
-building.
-
-## Publishing a story to the site
-
-Every finished story becomes its own page in the library. To publish:
-
-1. **Slug.** Choose a short, URL-safe, lowercase-hyphenated slug from the title
-   (e.g. *"The Salt Kings"* → `the-salt-kings`). Ensure it is unique in
-   `docs/stories/`.
-2. **Create the page.** Copy `docs/stories/_TEMPLATE.html` to
-   `docs/stories/<slug>.html` and replace **every** `{{PLACEHOLDER}}` token —
-   `{{TITLE}}`, `{{DESCRIPTION}}`, `{{READING_LEVEL}}`, `{{WORD_COUNT}}`,
-   `{{DATE}}`, and `{{BODY}}`. Leave **no** `{{...}}` tokens behind.
-   - `{{BODY}}` is the full story as HTML: one `<p>…</p>` per paragraph. Do not
-     print chunk boundaries or "Chunk N" markers — the seams must be invisible.
-   - Escape any literal `&`, `<`, `>` in prose as `&amp;`, `&lt;`, `&gt;`.
-3. **Register it.** Append an entry to the `stories` array in
-   `docs/stories.json` so the library page lists it:
-
-   ```json
-   {
-     "slug": "the-salt-kings",
-     "title": "The Salt Kings",
-     "description": "One-sentence hook.",
-     "level": "10",
-     "words": "8,000",
-     "date": "2026-07-07"
-   }
-   ```
-
-   Keep the JSON valid (no trailing commas). The library sorts by `date`
-   descending, so newest stories appear first automatically.
-4. **Publish.** Commit, push, and merge to `main` per the workflow above. The
-   story appears at
-   `https://nors3ai.github.io/Auto-Writer/stories/<slug>.html` and in the
-   library at `https://nors3ai.github.io/Auto-Writer/stories/`.
-
-Never edit `docs/stories/_TEMPLATE.html` as if it were a story — it is the
-reusable source. Always copy it to a new slug file.
+The app is published from **`/docs`** on `main`, so keep `docs/index.html` and
+`docs/stories/index.html` (the library app) valid so GitHub Pages keeps building.
 
 ## GitHub Pages
 
