@@ -27,10 +27,22 @@ The story is written in **English**.
 
 ## How it writes: 2000-word chunks
 
-Auto-Writer generates the story in **2,000-word chunks**. Each chunk continues
-seamlessly from the last, keeping world facts, character voices, and plot threads
-consistent from the first chunk to the final one. This keeps quality high over
-long works and lets the story grow to any length without losing coherence.
+Open the **Write a story** page, paste a prompt, pick a reading level, and Auto-Writer
+**writes the whole story for you** — you watch the prose stream in live. It generates
+the story in **2,000-word chunks**, each continuing seamlessly from the last, keeping
+world facts, character voices, and plot threads consistent from the first chunk to the
+final one. This keeps quality high over long works and lets the story grow to any length
+without losing coherence. The story ends on its own when the arc resolves, then saves
+straight to your library.
+
+### Powered by Claude, straight from your browser
+
+Auto-Writer is a **static site with no server**, so the app calls the
+[Claude API](https://console.anthropic.com/settings/keys) directly from your browser
+using **your own Anthropic API key**. The key is stored only on your device (or only
+for the session, if you choose) and is used solely for these requests. Get a key at
+[console.anthropic.com](https://console.anthropic.com/settings/keys). The default model
+is Claude Opus 4.8; Sonnet 5 and Haiku 4.5 are also selectable.
 
 ## Your input: up to 10,000 words
 
@@ -67,10 +79,11 @@ on GitHub. Your writing stays with you.
 
 ## Quick start
 
-1. Open the app and write your prompt (1–10,000 words) describing the story you want.
+1. Open **Write a story** and paste your prompt (1–10,000 words).
 2. Pick a reading level: **6**, **10**, **12**, or **doctorate**.
-3. Auto-Writer generates the story in 2,000-word chunks, written into the app.
-4. Save it to **your library**, organize it into folders, and edit it any time.
+3. Add your Anthropic API key (stored on your device) and click **Write the story**.
+4. Watch it stream in; it's saved to **your library** automatically when it finishes.
+5. Organize stories into folders and edit them any time in the library.
 
 ## Repository layout
 
@@ -80,6 +93,8 @@ Auto-Writer/
 ├── CLAUDE.md            # Operating instructions for the Auto-Writer agent
 └── docs/                # GitHub Pages site (source: main /docs) — app code only
     ├── index.html       # Landing page — https://nors3ai.github.io/Auto-Writer/
+    ├── compose/
+    │   └── index.html   # The writer — prompt → streamed story (calls the Claude API)
     └── stories/
         └── index.html   # Your library app (folders + story editor, browser-stored)
 ```

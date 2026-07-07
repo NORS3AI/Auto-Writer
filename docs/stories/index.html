@@ -111,6 +111,7 @@
     <a class="home" href="../index.html">← Auto-Writer</a>
     <h1>Your Library</h1>
     <span class="grow"></span>
+    <a class="btn primary" href="../compose/index.html" style="text-decoration:none">✍️ Write a story</a>
     <button class="btn" id="exportAll" title="Download a backup of your whole library">Backup</button>
     <button class="btn" id="importBtn" title="Restore from a backup file">Restore</button>
     <input type="file" id="importFile" accept="application/json" hidden />
@@ -337,8 +338,8 @@
       if (!list.length) {
         cards.innerHTML = "";
         empty.hidden = false;
-        empty.innerHTML = 'No stories here yet. Click <strong>+ New story</strong> to start writing, ' +
-          'or paste in a story Auto-Writer generated for you.';
+        empty.innerHTML = 'No stories here yet. <a href="../compose/index.html">Write a story from a prompt</a>, ' +
+          'or click <strong>+ New story</strong> to start a blank one.';
         return;
       }
       empty.hidden = true;

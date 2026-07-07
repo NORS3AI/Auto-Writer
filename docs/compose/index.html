@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Write a story — Auto-Writer</title>
+  <meta name="description" content="Turn a prompt into a complete story. Auto-Writer builds the world, dialogue, environment, and plot in 2,000-word chunks." />
+  <style>
+    :root {
+      --bg: #0f1117; --panel: #171a23; --panel2: #1f2432; --text: #e8eaf0; --muted: #9aa3b2;
+      --accent: #7c9cff; --danger: #ff7b86; --ok: #6ee7a8; --border: #262b38; --shadow: rgba(0,0,0,.35);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f7f8fb; --panel: #ffffff; --panel2: #f0f2f7; --text: #1a1d26; --muted: #5a6270;
+        --accent: #3a5bd9; --danger: #d23a4b; --ok: #157f52; --border: #e2e5ec; --shadow: rgba(20,30,60,.12);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text); line-height: 1.55;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .topbar {
+      display: flex; align-items: center; gap: 1rem; padding: .9rem 1.25rem;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 5;
+    }
+    .topbar a.home { color: var(--accent); text-decoration: none; font-size: .95rem; }
+    .topbar h1 { font-size: 1.15rem; margin: 0; letter-spacing: -.01em; }
+    .grow { flex: 1; }
+    .btn { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: .5rem .9rem; font-size: .9rem; }
+    .btn:hover { border-color: var(--accent); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; display: grid; gap: 1.25rem; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem 1.25rem; }
+    .card h2 { margin: 0 0 .8rem; font-size: 1.05rem; }
+    label { display: block; font-size: .85rem; color: var(--muted); margin: 0 0 .35rem; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 180px; }
+    input[type=text], input[type=password], select, textarea {
+      width: 100%; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+      padding: .55rem .7rem; font-size: .95rem;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    textarea#prompt { min-height: 160px; resize: vertical; line-height: 1.6; }
+    .hint { font-size: .8rem; color: var(--muted); margin-top: .35rem; }
+    .checkline { display: flex; align-items: center; gap: .5rem; font-size: .85rem; color: var(--muted); margin-top: .5rem; }
+    .checkline input { width: auto; }
+
+    .keybox summary { cursor: pointer; font-size: .95rem; }
+    .keybox[open] summary { margin-bottom: .8rem; }
+    .warn { background: rgba(255,123,134,.08); border: 1px solid rgba(255,123,134,.35); border-radius: 8px; padding: .7rem .85rem; font-size: .82rem; color: var(--muted); margin-top: .7rem; }
+
+    .controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+    .status { font-size: .88rem; color: var(--muted); }
+    .status.err { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+
+    .preview {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1.5rem;
+      font-family: Georgia, "Times New Roman", serif; font-size: 1.08rem; line-height: 1.75;
+      white-space: pre-wrap; min-height: 200px; max-height: 60vh; overflow-y: auto;
+    }
+    .preview:empty::before { content: "Your story will appear here as it's written…"; color: var(--muted); font-family: -apple-system, sans-serif; font-size: .95rem; }
+    .meterline { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .82rem; color: var(--muted); }
+    .meterline .pill { background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; padding: .15rem .7rem; }
+    .toast {
+      position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+      background: var(--panel); border: 1px solid var(--accent); padding: .55rem 1rem; border-radius: 10px;
+      box-shadow: 0 6px 24px var(--shadow); font-size: .9rem; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20;
+    }
+    .toast.show { opacity: 1; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="home" href="../index.html">← Auto-Writer</a>
+    <h1>Write a story</h1>
+    <span class="grow"></span>
+    <a class="home" href="../stories/index.html">Your library →</a>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>1 · Your prompt</h2>
+      <label for="prompt">Describe the story you want (1–10,000 words). Name characters, setting, tone, plot beats, and anything to avoid.</label>
+      <textarea id="prompt" placeholder="e.g. A lighthouse keeper on a dying coast discovers the sea is spelling out warnings in the tide. Coastal folk horror, hopeful ending…"></textarea>
+      <div class="hint" id="promptCount">0 words</div>
+    </div>
+
+    <div class="card">
+      <h2>2 · Options</h2>
+      <div class="row">
+        <div>
+          <label for="title">Title (optional)</label>
+          <input type="text" id="title" placeholder="Auto-generated if left blank" />
+        </div>
+        <div>
+          <label for="level">Reading level</label>
+          <select id="level">
+            <option value="6">6 — simple, short sentences</option>
+            <option value="10" selected>10 — general adult</option>
+            <option value="12">12 — richer, layered</option>
+            <option value="doctorate">Doctorate — advanced, scholarly</option>
+          </select>
+        </div>
+        <div>
+          <label for="folder">Save to folder</label>
+          <select id="folder"></select>
+        </div>
+      </div>
+      <div>
+        <label for="maxChunks" style="margin-top:1rem">Length limit (safety cap on 2,000-word chunks)</label>
+        <select id="maxChunks">
+          <option value="3">Short — up to 3 chunks (~6k words)</option>
+          <option value="6" selected>Novelette — up to 6 chunks (~12k words)</option>
+          <option value="10">Novella — up to 10 chunks (~20k words)</option>
+          <option value="20">Long — up to 20 chunks (~40k words)</option>
+        </select>
+        <div class="hint">The story ends on its own when the arc completes; this only prevents runaway generation.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3 · Connect Claude</h2>
+      <details class="keybox" id="keybox">
+        <summary>Anthropic API key <span id="keyState" class="status"></span></summary>
+        <label for="apikey" style="margin-top:.6rem">API key (starts with <code>sk-ant-</code>)</label>
+        <input type="password" id="apikey" placeholder="sk-ant-…" autocomplete="off" />
+        <div class="checkline"><input type="checkbox" id="remember" checked /> <label for="remember" style="margin:0">Remember on this device</label></div>
+        <div>
+          <label for="model" style="margin-top:.8rem">Model</label>
+          <select id="model">
+            <option value="claude-opus-4-8" selected>Claude Opus 4.8 (most capable)</option>
+            <option value="claude-sonnet-5">Claude Sonnet 5 (faster, cheaper)</option>
+            <option value="claude-haiku-4-5">Claude Haiku 4.5 (fastest)</option>
+          </select>
+        </div>
+        <div class="warn">
+          Auto-Writer is a static site with no server, so it calls the Claude API straight from your browser.
+          Your key is used only for these requests and is stored <strong>only on this device</strong> (or not at all
+          if you untick the box). Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.
+          For shared or public machines, prefer a scoped, limited key.
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <button class="btn primary" id="go">✍️ Write the story</button>
+        <button class="btn danger" id="stop" hidden>Stop</button>
+        <span class="grow"></span>
+        <span class="status" id="status"></span>
+      </div>
+      <div class="meterline" style="margin-top:.9rem">
+        <span class="pill" id="chunkPill">Chunk 0</span>
+        <span class="pill" id="wordPill">0 words</span>
+        <span class="pill" id="savedPill" hidden>Saved to library</span>
+      </div>
+    </div>
+
+    <div class="preview" id="preview"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  (function () {
+    "use strict";
+    var API_URL = "https://api.anthropic.com/v1/messages";
+    var KEY_STORE = "autowriter.apikey";
+    var LIB_KEY = "autowriter.library.v1";
+    var UNFILED = "__unfiled__";
+    var END = "<<END>>";
+    var CHUNK_WORDS = 2000;
+
+    var $ = function (id) { return document.getElementById(id); };
+    function wordCount(t) { var m = String(t || "").trim().match(/\S+/g); return m ? m.length : 0; }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+    var toastTimer;
+    function toast(msg) { var t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400); }
+    function setStatus(msg, kind) { var s = $("status"); s.textContent = msg; s.className = "status" + (kind ? " " + kind : ""); }
+
+    // ---------- reading-level guidance ----------
+    var LEVELS = {
+      "6": "Grade-6 reading level. Common everyday words, short sentences, concrete imagery, clear cause and effect. Avoid rare vocabulary and complex clauses.",
+      "10": "Grade-10 reading level. General adult prose with moderate vocabulary and varied sentence length. Natural, readable, not simplistic.",
+      "12": "Grade-12 reading level. Richer vocabulary, layered sentences, subtext and nuance. Confident literary prose.",
+      "doctorate": "Advanced/doctorate reading level. Dense, sophisticated, scholarly diction and complex sentence structure. Assume a highly literate reader."
+    };
+
+    function buildSystem(level) {
+      return [
+        "You are Auto-Writer, an expert fiction author. From the user's prompt you craft four things together, woven into one story:",
+        "1. THE WORLD — coherent geography, history, factions, rules, and lore.",
+        "2. THE DIALOGUE — natural speech, each character recognizable by how they speak.",
+        "3. THE VIBRANT ENVIRONMENT — sensory, atmospheric scene description; show, don't tell.",
+        "4. THE STORY — a satisfying plot arc from opening to a deliberate resolution.",
+        "",
+        "Reading level: " + (LEVELS[level] || LEVELS["10"]) + " Hold this level consistently throughout.",
+        "",
+        "Write in English. Treat the user's prompt as authoritative: honor named characters, settings, tone, plot beats, and any 'do-not' constraints.",
+        "",
+        "You write the story in chunks of about " + CHUNK_WORDS + " words. Rules for each turn:",
+        "- Write ~" + CHUNK_WORDS + " words, then STOP at a natural paragraph break. Do not exceed ~" + Math.round(CHUNK_WORDS * 1.2) + " words in a turn.",
+        "- Continue seamlessly from what came before — no recaps, no restarts, no contradictions. Keep world facts, character voices, timeline, and open threads consistent.",
+        "- Output ONLY the story prose. No headings, no word counts, no 'Chunk N' labels, no notes to the reader, no meta commentary.",
+        "- When the story reaches its natural, complete ending, finish the final paragraph and then put the token " + END + " on its own line. Only emit " + END + " when the arc is truly resolved.",
+        "",
+        "When the user says 'continue', resume exactly where you left off with the next ~" + CHUNK_WORDS + " words."
+      ].join("\n");
+    }
+
+    function buildOpeningMessage(prompt, level) {
+      return "Write a complete story from this prompt, at reading level " + level + ".\n\n" +
+        "PROMPT:\n" + prompt + "\n\n" +
+        "Begin the story now. Write about " + CHUNK_WORDS + " words, then stop at a paragraph break. " +
+        "Remember: output only the story prose, and emit " + END + " only when the whole story is finished.";
+    }
+
+    // ---------- library storage ----------
+    function loadLib() {
+      try { var d = JSON.parse(localStorage.getItem(LIB_KEY)); if (!d || typeof d !== "object") return { folders: [], stories: [] };
+        d.folders = Array.isArray(d.folders) ? d.folders : []; d.stories = Array.isArray(d.stories) ? d.stories : []; return d;
+      } catch (e) { return { folders: [], stories: [] }; }
+    }
+    function populateFolders() {
+      var lib = loadLib(); var sel = $("folder");
+      var opts = '<option value="' + UNFILED + '">Unfiled</option>';
+      lib.folders.forEach(function (f) { opts += '<option value="' + f.id + '">' + escapeAttr(f.name) + '</option>'; });
+      sel.innerHTML = opts;
+    }
+    function escapeAttr(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function saveStory(title, level, body, folderId) {
+      var lib = loadLib();
+      var s = { id: uid(), title: title || "Untitled story", level: level, body: body,
+                folderId: (folderId === UNFILED ? null : folderId), createdAt: Date.now(), updatedAt: Date.now() };
+      lib.stories.push(s);
+      try { localStorage.setItem(LIB_KEY, JSON.stringify(lib)); return true; }
+      catch (e) { toast("Couldn't save — browser storage may be full."); return false; }
+    }
+
+    // ---------- API key persistence ----------
+    var sessionKey = "";
+    function loadKey() {
+      var stored = "";
+      try { stored = localStorage.getItem(KEY_STORE) || ""; } catch (e) {}
+      if (stored) { $("apikey").value = stored; sessionKey = stored; $("remember").checked = true; $("keyState").textContent = "· saved on this device"; }
+    }
+    function persistKey() {
+      var v = $("apikey").value.trim(); sessionKey = v;
+      try {
+        if ($("remember").checked && v) { localStorage.setItem(KEY_STORE, v); $("keyState").textContent = "· saved on this device"; }
+        else { localStorage.removeItem(KEY_STORE); $("keyState").textContent = v ? "· this session only" : ""; }
+      } catch (e) {}
+    }
+
+    // ---------- streaming Claude call ----------
+    // Returns { text, stopReason }. Calls onDelta(textChunk) as tokens stream.
+    async function streamClaude(model, system, messages, signal, onDelta) {
+      var res = await fetch(API_URL, {
+        method: "POST",
+        signal: signal,
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": sessionKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 4096,
+          stream: true,
+          system: system,
+          messages: messages
+        })
+      });
+      if (!res.ok) {
+        var detail = "";
+        try { var j = await res.json(); detail = (j && j.error && j.error.message) ? j.error.message : JSON.stringify(j); }
+        catch (e) { try { detail = await res.text(); } catch (e2) {} }
+        throw new Error("HTTP " + res.status + (detail ? " — " + detail : ""));
+      }
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = "", text = "", stopReason = null;
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        var lines = buffer.split("\n");
+        buffer = lines.pop(); // keep incomplete line
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line.indexOf("data:") !== 0) continue;
+          var payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") continue;
+          var evt;
+          try { evt = JSON.parse(payload); } catch (e) { continue; }
+          if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") {
+            text += evt.delta.text; onDelta(evt.delta.text);
+          } else if (evt.type === "message_delta" && evt.delta && evt.delta.stop_reason) {
+            stopReason = evt.delta.stop_reason;
+          } else if (evt.type === "error") {
+            throw new Error((evt.error && evt.error.message) || "stream error");
+          }
+        }
+      }
+      return { text: text, stopReason: stopReason };
+    }
+
+    // ---------- orchestration ----------
+    var controller = null, running = false;
+    var fullBody = "";
+
+    async function run() {
+      if (running) return;
+      var prompt = $("prompt").value.trim();
+      var level = $("level").value;
+      var model = $("model").value;
+      var maxChunks = parseInt($("maxChunks").value, 10) || 6;
+      persistKey();
+
+      if (!sessionKey) { setStatus("Add your Anthropic API key first.", "err"); $("keybox").open = true; $("apikey").focus(); return; }
+      if (!prompt) { setStatus("Write a prompt first.", "err"); $("prompt").focus(); return; }
+      if (wordCount(prompt) > 10000) { setStatus("Prompt is over the 10,000-word limit. Please shorten it.", "err"); return; }
+
+      running = true; fullBody = "";
+      $("go").disabled = true; $("stop").hidden = false; $("savedPill").hidden = true;
+      $("preview").textContent = ""; $("wordPill").textContent = "0 words"; $("chunkPill").textContent = "Chunk 0";
+      controller = new AbortController();
+
+      var system = buildSystem(level);
+      var messages = [{ role: "user", content: buildOpeningMessage(prompt, level) }];
+      var chunks = [];
+      var finished = false;
+
+      try {
+        for (var n = 1; n <= maxChunks; n++) {
+          $("chunkPill").textContent = "Chunk " + n;
+          setStatus("Writing chunk " + n + "…");
+          var acc = "";
+          var result = await streamClaude(model, system, messages, controller.signal, function (t) {
+            acc += t;
+            // Live preview: show everything so far plus the streaming chunk, hide the END marker.
+            var live = (fullBody ? fullBody + "\n\n" : "") + acc;
+            var shown = live.replace(END, "");
+            var pv = $("preview"); pv.textContent = shown; pv.scrollTop = pv.scrollHeight;
+            $("wordPill").textContent = wordCount(shown) + " words";
+          });
+
+          var piece = result.text;
+          var hasEnd = piece.indexOf(END) !== -1;
+          piece = piece.replace(END, "").trim();
+          if (piece) { chunks.push(piece); fullBody = chunks.join("\n\n"); }
+
+          // Update the assistant turn in history so the next chunk continues seamlessly.
+          messages.push({ role: "assistant", content: result.text });
+
+          if (hasEnd) { finished = true; break; }
+          if (result.stopReason === "end_turn" && n >= 1 && !hasEnd) {
+            // Model ended a turn without the END marker and without being cut off: nudge it to continue.
+          }
+          messages.push({ role: "user", content: "continue" });
+        }
+      } catch (err) {
+        if (err && err.name === "AbortError") { setStatus("Stopped. Partial story kept below.", ""); }
+        else { setStatus("Error: " + (err && err.message ? err.message : err), "err"); }
+        finishRun(chunks, level, false);
+        return;
+      }
+
+      if (!finished) setStatus("Reached the length limit — wrapping up here.", "");
+      else setStatus("Story complete.", "ok");
+      finishRun(chunks, level, true);
+    }
+
+    function finishRun(chunks, level, completed) {
+      running = false; $("go").disabled = false; $("stop").hidden = true; controller = null;
+      var body = chunks.join("\n\n").replace(END, "").trim();
+      $("preview").textContent = body;
+      $("wordPill").textContent = wordCount(body) + " words";
+      if (!body) return;
+      var title = $("title").value.trim();
+      if (!title) title = deriveTitle(body);
+      var ok = saveStory(title, level, body, $("folder").value);
+      if (ok) {
+        $("savedPill").hidden = false;
+        toast(completed ? "Saved “" + title + "” to your library." : "Partial story saved to your library.");
+        // Only take over the status line on success; on error/stop keep that message
+        // and just append the library link so the reason stays visible.
+        if (completed) setStatus("Story complete. Saved to your library — ", "ok");
+        else { var s = $("status"); s.textContent = (s.textContent || "Saved to your library") + " — "; }
+        var a = document.createElement("a"); a.href = "../stories/index.html"; a.textContent = "open it →";
+        $("status").appendChild(a);
+      }
+    }
+
+    function deriveTitle(body) {
+      // Use the first few words of the story as a fallback title.
+      var words = body.replace(/\s+/g, " ").trim().split(" ").slice(0, 6).join(" ");
+      words = words.replace(/[.,;:!?"'—-]+$/, "");
+      return words ? words + "…" : "Untitled story";
+    }
+
+    // ---------- events ----------
+    $("prompt").addEventListener("input", function () { $("promptCount").textContent = wordCount($("prompt").value) + " words"; });
+    $("apikey").addEventListener("input", persistKey);
+    $("remember").addEventListener("change", persistKey);
+    $("go").addEventListener("click", run);
+    $("stop").addEventListener("click", function () { if (controller) controller.abort(); });
+
+    // ---------- init ----------
+    populateFolders();
+    loadKey();
+    // Pre-fill prompt/level from URL (?prompt=…&level=…) if provided.
+    try {
+      var params = new URLSearchParams(location.search);
+      if (params.get("prompt")) { $("prompt").value = params.get("prompt"); $("promptCount").textContent = wordCount($("prompt").value) + " words"; }
+      if (params.get("level") && LEVELS[params.get("level")]) $("level").value = params.get("level");
+    } catch (e) {}
+  })();
+  </script>
+</body>
+</html>

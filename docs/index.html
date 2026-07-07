@@ -60,7 +60,10 @@
     <header>
       <h1>Auto-Writer</h1>
       <p class="tag">One prompt in. A whole world, written out.</p>
-      <p style="margin-top:1.25rem"><a href="stories/index.html" style="display:inline-block;background:var(--accent);color:#fff;padding:.6rem 1.4rem;border-radius:999px;text-decoration:none;font-weight:600">Open your library →</a></p>
+      <p style="margin-top:1.25rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+        <a href="compose/index.html" style="display:inline-block;background:var(--accent);color:#fff;padding:.6rem 1.4rem;border-radius:999px;text-decoration:none;font-weight:600">✍️ Write a story →</a>
+        <a href="stories/index.html" style="display:inline-block;background:var(--panel);border:1px solid var(--border);color:inherit;padding:.6rem 1.4rem;border-radius:999px;text-decoration:none;font-weight:600">Your library</a>
+      </p>
     </header>
 
     <p>
@@ -81,9 +84,17 @@
 
     <h2>How it writes</h2>
     <p>
-      Stories are generated in <strong>2,000-word chunks</strong>, each continuing
-      seamlessly from the last so world facts, character voices, and plot threads stay
-      consistent across any length. All output is written in <strong>English</strong>.
+      Give it a prompt and Auto-Writer <strong>writes the whole story for you</strong>,
+      powered by Claude. It generates the story in <strong>2,000-word chunks</strong>,
+      each continuing seamlessly from the last so world facts, character voices, and
+      plot threads stay consistent across any length — you watch the prose appear live.
+      All output is written in <strong>English</strong>.
+    </p>
+    <p class="note" style="margin-top:1rem">
+      Because this is a static site with no server, the app calls the Claude API
+      directly from your browser using your own Anthropic API key, which stays on your
+      device. Grab a key at
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.
     </p>
 
     <h2>Your input</h2>
@@ -112,8 +123,9 @@
       your writing is yours and stays local. Use <strong>Backup</strong> in the
       library to download a copy you can keep or restore later.
     </p>
-    <p style="text-align:center;margin:1.75rem 0">
-      <a href="stories/index.html" style="display:inline-block;background:var(--accent);color:#fff;padding:.7rem 1.6rem;border-radius:999px;text-decoration:none;font-weight:600">Open your library →</a>
+    <p style="text-align:center;margin:1.75rem 0;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+      <a href="compose/index.html" style="display:inline-block;background:var(--accent);color:#fff;padding:.7rem 1.6rem;border-radius:999px;text-decoration:none;font-weight:600">✍️ Write a story →</a>
+      <a href="stories/index.html" style="display:inline-block;background:var(--panel);border:1px solid var(--border);color:inherit;padding:.7rem 1.6rem;border-radius:999px;text-decoration:none;font-weight:600">Open your library</a>
     </p>
 
     <div class="note">

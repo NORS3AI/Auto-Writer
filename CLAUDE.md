@@ -46,6 +46,26 @@ Hold the chosen level **consistently across every chunk**.
   plot threads** so consistency holds across chunks.
 - Keep generating chunks until the story reaches a natural, complete ending.
 
+## How the app generates stories
+
+The **Write a story** page (`docs/compose/index.html`) is the generator. It is a
+client-side app: because Auto-Writer is a static GitHub Pages site with no server,
+it calls the **Claude API directly from the browser** using the user's own Anthropic
+API key (stored in local storage, or only for the session). Key points if you edit it:
+
+- **Model:** default `claude-opus-4-8` (Sonnet 5 / Haiku 4.5 selectable). Requests
+  use `stream: true` and set the `anthropic-dangerous-direct-browser-access: true`
+  header for browser CORS. Do **not** send `temperature`, `top_p`, or `budget_tokens`
+  — they return a 400 on Opus 4.8 / Sonnet 5.
+- **Chunk loop:** a system prompt encodes the mission (world/dialogue/environment/
+  story), the selected reading level, and the ~2,000-word chunking rule. The model
+  writes one chunk, the app appends it to the message history and sends `continue`
+  for the next, until the model emits the `<<END>>` sentinel or the safety cap is hit.
+- **System prompt tells the model to output only story prose** (no headings, no
+  "Chunk N" labels, no meta) so chunk seams stay invisible.
+- On completion the story is written straight into the library via the shared
+  `autowriter.library.v1` local-storage schema — same shape the library app reads.
+
 ## Where stories live
 
 **Stories are written in the app and saved to the user's library — they are NOT
@@ -71,8 +91,9 @@ When the **app itself** changes:
 2. **Push** the commit to the remote.
 3. **Merge** into **`main`** automatically — no manual approval step.
 
-The app is published from **`/docs`** on `main`, so keep `docs/index.html` and
-`docs/stories/index.html` (the library app) valid so GitHub Pages keeps building.
+The app is published from **`/docs`** on `main`, so keep `docs/index.html`,
+`docs/compose/index.html` (the writer), and `docs/stories/index.html` (the library)
+valid so GitHub Pages keeps building.
 
 ## GitHub Pages
 
